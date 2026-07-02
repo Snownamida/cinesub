@@ -140,7 +140,11 @@ export class SetupView {
             setLang(sel.value as (typeof SUPPORTED)[number]['code']);
             this.render();
         });
-        return sel;
+        // 🌐 是跨语言通用的“语言/地区”符号：不懂当前界面语言的人也能认出这是语言切换
+        return el('div', { class: 'lang-wrap' }, [
+            el('span', { class: 'lang-globe', text: '🌐', 'aria-hidden': 'true' }),
+            sel,
+        ]);
     }
 
     private resumeCard(session: Session): HTMLElement {

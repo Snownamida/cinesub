@@ -25,8 +25,10 @@ body {
 .setup-title { font-size: 2rem; letter-spacing: 0.5px; }
 .setup-title small { font-size: 1rem; color: #888; font-weight: 500; }
 .setup-tagline { color: #aaa; font-size: 0.95rem; }
+.lang-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-top: 4px; }
+.lang-globe { font-size: 1.15rem; line-height: 1; }
 .lang-select {
-    font: inherit; font-size: 0.9rem; flex-shrink: 0; margin-top: 4px;
+    font: inherit; font-size: 0.9rem;
     background: #14120c; color: #ccc; border: 1px solid #3a3320;
     border-radius: 10px; padding: 8px 10px; cursor: pointer;
 }

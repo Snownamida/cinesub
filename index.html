@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+
+    <!-- SEO -->
+    <title>CineSub 影院字幕伴侣 — 手机播放字幕文件，海外看电影不再没字幕</title>
+    <meta name="description" content="在影院用手机同步播放你自己的字幕文件（.srt/.vtt/.ass）：纯黑背景不打扰邻座，支持同步微调、屏幕常亮、离线使用。海外华人看原声电影的字幕神器，免费无广告。">
+    <meta name="keywords" content="影院字幕,电影字幕,手机字幕,srt播放器,字幕播放器,海外看电影,没有字幕,subtitle viewer,cinema subtitles">
+    <meta name="author" content="Snownamida">
+    <link rel="canonical" href="https://cinesub.snownamida.top/">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CineSub 影院字幕伴侣">
+    <meta property="og:title" content="CineSub — 手机举字幕，纯黑不扰人">
+    <meta property="og:description" content="加载你自己的字幕文件，在纯黑屏幕上同步播放。海外看电影，字幕自己带。">
+    <meta property="og:url" content="https://cinesub.snownamida.top/">
+    <meta property="og:locale" content="zh_CN">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "CineSub 影院字幕伴侣",
+      "url": "https://cinesub.snownamida.top/",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+      "description": "在影院用手机同步播放你自己的字幕文件：纯黑背景、同步微调、离线可用。",
+      "inLanguage": "zh-CN",
+      "author": { "@type": "Person", "name": "Snownamida" }
+    }
+    </script>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <!-- 静态可索引说明（播放时自动隐藏） -->
+    <article class="about">
+        <h2>这是什么？</h2>
+        <p>在国外看电影，影院常常没有你语言的字幕。CineSub 让你把字幕带进影院：提前下载好电影的字幕文件（.srt / .vtt / .ass），开场时在手机上同步播放——<strong>纯黑背景 + 可调暗度</strong>，拿在手里或放在腿上看，不会打扰身边的观众。</p>
+
+        <h2>怎么用？</h2>
+        <ul>
+            <li>提前找好字幕文件（OpenSubtitles、SubHD 等站点），存到手机里；</li>
+            <li>进影院前打开本页（<strong>加载过一次后离线也能用</strong>），选择字幕文件；</li>
+            <li>正片第一句台词出现时按「开始播放」，之后用 ±0.5s/±5s 按钮把字幕对齐台词；</li>
+            <li>屏幕会保持常亮；中场休息可暂停，误退出还能一键续播。</li>
+        </ul>
+
+        <h2>为什么放心用？</h2>
+        <ul>
+            <li>🔒 <strong>不上传任何文件</strong>：字幕只在你的手机浏览器里解析和播放；</li>
+            <li>📴 离线可用（PWA）：影厅没信号也不受影响；</li>
+            <li>🆓 免费、无广告、<a href="https://github.com/Snownamida/cinesub" target="_blank" rel="noopener">开源</a>。</li>
+        </ul>
+
+        <h2>小贴士</h2>
+        <ul>
+            <li>把系统亮度调到最低再进场，用应用内「暗度」做二次压暗；</li>
+            <li>深夜场推荐<strong>红色或琥珀色</strong>文字——黑暗中最不刺眼；</li>
+            <li>中文老字幕若显示乱码，本工具会自动尝试 GBK 编码，一般无需处理。</li>
+        </ul>
+
+        <p style="margin-top:20px;color:#555;">
+            觉得有用？<a href="https://ko-fi.com/snownamida" target="_blank" rel="noopener">☕ 请我喝咖啡</a>
+        </p>
+    </article>
+
+    <script type="module" src="/src/main.ts"></script>
+    <script src="kofi-widget.js" defer></script>
+</body>
+
+</html>

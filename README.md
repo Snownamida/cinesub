@@ -1,0 +1,52 @@
+# 🎬 CineSub — 影院字幕伴侣
+
+在国外看电影，影院常常没有你语言的字幕。**CineSub 让你把字幕带进影院**：
+提前下载电影的字幕文件，开场时在手机上同步播放——纯黑背景、可再压暗，
+拿在手里看字幕，不打扰任何人。
+
+**线上地址**：https://cinesub.snownamida.top/
+
+## 功能
+
+- 📄 支持 **.srt / .vtt / .ass(.ssa)**，自动识别编码（UTF-8 → GB18030 → Windows-1252，中文老字幕不乱码）
+- ⏱ **同步微调**：±0.5s / ±5s 一键对时；支持跳转到任意片内时刻（`1:23:45`）
+- ⏸ 暂停/继续（中场休息友好）
+- 🌑 纯黑背景（OLED 熄灭像素）+ 应用内**二次压暗**滑杆
+- 🎨 文字颜色：白/灰/**琥珀/红**（暗场里红光最不刺眼）；字号滑杆
+- 🔆 **Wake Lock 屏幕常亮**——两小时电影不锁屏
+- 💾 **断点恢复**：每 5 秒存档，误刷新/误退出一键续播
+- 📴 **PWA 离线可用**：在家打开过一次，影厅没网也能用
+- 🔒 隐私：文件只在本机解析，**零上传、零后端**
+- 🍿 内置演示字幕，在家先把流程走一遍
+
+## 技术
+
+Vite + TypeScript(strict) + Vitest，零框架零运行时依赖（全部 devDependencies），
+构建产物约 26 KB。领域层（解析器/时钟/命中查询）为纯函数，20 个单元测试覆盖。
+
+```
+src/
+  domain/   纯逻辑：parseSrt / parseVtt / parseAss / parse(编码探测+调度)
+            cues(二分命中/时间格式) / clock(播放时钟)
+  app/      store（设置 + 会话持久化）
+  ui/       SetupView（选文件/拖拽/续播/演示）
+            PlayerView（播放+控制层）/ wakeLock / dom
+tests/      Vitest 单元测试
+```
+
+## 开发
+
+```bash
+npm install
+npm run dev      # 开发服务器
+npm run check    # tsc + vitest
+npm run build    # 生产构建 -> dist/
+```
+
+## 部署
+
+Cloudflare Pages：Build command `npm run build`，输出目录 `dist`。
+
+## 许可
+
+MIT © Snownamida

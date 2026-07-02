@@ -1,0 +1,130 @@
+/* ============ CineSub — 影院字幕伴侣 ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+    background: #000; /* 纯黑：OLED 像素熄灭，也最不打扰邻座 */
+    color: #e8e8e8;
+    font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+}
+#app { height: 100%; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ---- 起始界面 ---- */
+.setup {
+    min-height: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: max(24px, env(safe-area-inset-top)) 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.setup-title { font-size: 2rem; letter-spacing: 0.5px; }
+.setup-title small { font-size: 1rem; color: #888; font-weight: 500; }
+.setup-tagline { color: #aaa; font-size: 0.95rem; }
+
+.drop-zone {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    border: 2px dashed #444; border-radius: 18px;
+    padding: 34px 16px; cursor: pointer; text-align: center;
+    transition: border-color 0.15s, background 0.15s;
+}
+.drop-zone.over, .drop-zone:hover { border-color: #c8963c; background: #100d06; }
+.dz-icon { font-size: 2.4rem; }
+.dz-main { font-size: 1.15rem; font-weight: 700; }
+.dz-sub { color: #888; font-size: 0.85rem; }
+
+.setup-status { min-height: 1.4em; font-size: 0.92rem; color: #7bd88f; }
+.setup-status.bad { color: #ff7b72; }
+
+.btn-start {
+    font: inherit; font-size: 1.15rem; font-weight: 800;
+    background: #c8963c; color: #14100a; border: 0; border-radius: 14px;
+    padding: 14px; cursor: pointer;
+}
+.btn-start:disabled { background: #2a2a2a; color: #666; cursor: default; }
+.btn-demo {
+    font: inherit; background: none; border: 1px solid #333; color: #999;
+    border-radius: 12px; padding: 10px; cursor: pointer;
+}
+.btn-demo:hover { border-color: #666; color: #ccc; }
+
+.setup-tips { list-style: none; color: #777; font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
+
+.resume-card {
+    display: flex; align-items: center; gap: 12px;
+    background: #14120c; border: 1px solid #3a3320; border-radius: 14px; padding: 12px 14px;
+}
+.resume-card > div:first-child { flex: 1; min-width: 0; }
+.resume-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.resume-pos { color: #998a5c; font-size: 0.85rem; }
+.btn-resume {
+    font: inherit; font-weight: 700; background: #3a3320; color: #e8d9a0;
+    border: 0; border-radius: 10px; padding: 8px 14px; cursor: pointer; white-space: nowrap;
+}
+.btn-dismiss { font: inherit; background: none; border: 0; color: #666; font-size: 1.2rem; cursor: pointer; padding: 4px 8px; }
+
+/* ---- 播放界面 ---- */
+body.playing { overflow: hidden; }
+.player {
+    position: fixed; inset: 0; background: #000;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none; -webkit-user-select: none; touch-action: manipulation;
+}
+.subtitle {
+    max-width: 92vw;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.45;
+    white-space: pre-line;
+    text-wrap: balance;
+}
+.dim-overlay { position: fixed; inset: 0; pointer-events: none; }
+
+/* 控制层 */
+.controls {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding: 12px max(12px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    background: rgba(12, 12, 12, 0.92);
+    border-top: 1px solid #222;
+    display: flex; flex-direction: column; gap: 10px;
+    z-index: 10;
+}
+.controls.hidden { display: none; }
+.ctl-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.ctl-top { justify-content: space-between; color: #999; font-size: 0.85rem; }
+.ctl-file { flex: 1; min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; }
+.ctl-time { color: #ddd; font-variant-numeric: tabular-nums; }
+.ctl-total { color: #666; }
+.ctl-lab { color: #777; font-size: 0.85rem; min-width: 2.5em; }
+.ctl-hint { color: #555; font-size: 0.75rem; text-align: center; }
+.ctl-btn {
+    font: inherit; font-size: 0.95rem; font-weight: 700;
+    background: #1c1c1c; color: #ddd; border: 1px solid #333;
+    border-radius: 10px; padding: 9px 14px; cursor: pointer;
+    min-width: 56px; min-height: 42px;
+}
+.ctl-btn:active { background: #2a2a2a; }
+.ctl-pause { background: #26210f; border-color: #4a3f1c; color: #e8d9a0; min-width: 88px; }
+.ctl-pause.paused { background: #c8963c; color: #14100a; }
+.ctl-input {
+    font: inherit; background: #111; color: #ddd; border: 1px solid #333;
+    border-radius: 10px; padding: 9px 10px; width: 11em; text-align: center;
+}
+.ctl-input.bad { border-color: #ff7b72; }
+.ctl-slider { flex: 1; max-width: 160px; accent-color: #c8963c; }
+.ctl-color {
+    width: 34px; height: 34px; border-radius: 50%; border: 2px solid #333; cursor: pointer;
+}
+
+/* ---- 静态说明（index.html 内） ---- */
+.about {
+    max-width: 560px; margin: 0 auto; padding: 8px 20px 48px; color: #999;
+    font-size: 0.9rem; line-height: 1.7;
+}
+.about h2 { color: #ccc; font-size: 1.1rem; margin: 20px 0 6px; }
+.about a { color: #c8963c; }
+.about ul { padding-left: 1.2em; }
+body.playing .about { display: none; }

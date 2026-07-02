@@ -1,0 +1,23 @@
+{
+    "name": "cinesub",
+    "private": true,
+    "version": "1.0.0",
+    "description": "影院字幕伴侣 — 在手机纯黑屏幕上同步播放你自己的字幕文件，海外看电影不再没字幕。",
+    "type": "module",
+    "author": "Snownamida",
+    "license": "MIT",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc --noEmit && vite build",
+        "preview": "vite preview",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "check": "tsc --noEmit && vitest run"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.0",
+        "vite": "^6.4.1",
+        "vite-plugin-pwa": "^1.2.0",
+        "vitest": "^4.1.9"
+    }
+}

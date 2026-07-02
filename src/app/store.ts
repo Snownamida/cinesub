@@ -18,6 +18,12 @@ export const COLORS: { id: string; value: string }[] = [
     { id: 'red', value: '#b03030' },
 ];
 
+/**
+ * 演示字幕的稳定标识（存进会话的 fileName）。显示时按当前语言翻译，
+ * 而不是固化成存档那一刻的语言。真实文件名不会与之相撞。
+ */
+export const DEMO_ID = '__cinesub_demo__';
+
 const SETTINGS_KEY = 'cinesub-settings';
 const SESSION_KEY = 'cinesub-session';
 

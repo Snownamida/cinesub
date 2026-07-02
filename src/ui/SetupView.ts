@@ -1,6 +1,6 @@
 import { decodeSubtitleBytes, parseSubtitle } from '../domain/parse';
 import { Cue, formatTime, totalDuration } from '../domain/cues';
-import { Session, clearSession, loadSession } from '../app/store';
+import { DEMO_ID, Session, clearSession, loadSession } from '../app/store';
 import { SUPPORTED, getLang, setLang, t } from '../i18n';
 import { el } from './dom';
 
@@ -150,12 +150,19 @@ export class SetupView {
     private resumeCard(session: Session): HTMLElement {
         return el('div', { class: 'resume-card' }, [
             el('div', {}, [
-                el('div', { class: 'resume-name', text: session.fileName }),
+                el('div', { class: 'resume-name', text: session.fileName === DEMO_ID ? t('setup.demo_name') : session.fileName }),
                 el('div', { class: 'resume-pos', text: t('setup.resume_pos', { time: formatTime(session.positionMs) }) }),
             ]),
             el('button', {
                 class: 'btn-resume', text: t('setup.resume'),
-                onclick: () => this.onStart(session.cues, session.fileName, session.positionMs, session.secondaryCues, session.secondaryName),
+                onclick: () => {
+                    // 续播演示字幕时用当前语言重建，名字和字幕都跟随界面语言
+                    if (session.fileName === DEMO_ID) {
+                        this.onStart(parseSubtitle('demo.vtt', buildDemoVtt()), DEMO_ID, session.positionMs);
+                    } else {
+                        this.onStart(session.cues, session.fileName, session.positionMs, session.secondaryCues, session.secondaryName);
+                    }
+                },
             }),
             el('button', {
                 class: 'btn-dismiss', text: '×', title: t('setup.dismiss'),
@@ -197,10 +204,10 @@ export class SetupView {
     }
 
     private loadDemo(): void {
-        const name = t('setup.demo_name');
+        // 用稳定标识而非当前语言的字符串，续播/控制层再按语言翻译
         const cues = parseSubtitle('demo.vtt', buildDemoVtt());
-        this.loaded = { cues, fileName: name };
-        this.onStart(cues, name, 0);
+        this.loaded = { cues, fileName: DEMO_ID };
+        this.onStart(cues, DEMO_ID, 0);
     }
 
     private setStatus(msg: string, bad: boolean): void {

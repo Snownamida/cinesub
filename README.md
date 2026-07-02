@@ -1,58 +1,57 @@
-# 🎬 CineSub — 影院字幕伴侣
+**English** | [中文](README.zh-CN.md)
 
-在国外看电影，影院常常没有你语言的字幕。**CineSub 让你把字幕带进影院**：
-提前下载电影的字幕文件，开场时在手机上同步播放——纯黑背景、可再压暗，
-拿在手里看字幕，不打扰任何人。
+# 🎬 CineSub — Your Subtitle Companion for the Cinema
 
-**线上地址**：https://cinesub.snownamida.top/
+Watching a film abroad, the theatre often has no subtitles in your language. **CineSub lets you bring your own subtitles into the cinema:** download the film's subtitle file ahead of time, then play it in sync on your phone as the movie starts — on a pure-black screen you can dim even further, held in your hand, without disturbing anyone around you.
 
-## 功能
+**Live site:** https://cinesub.snownamida.top/
 
-- 📄 支持 **.srt / .vtt / .ass(.ssa)**，自动识别编码（UTF-8 → GB18030 → Windows-1252，中文老字幕不乱码）
-- 🈁 **假名/拼音注音**：VTT 里的 `<ruby>漢字<rt>かんじ</rt></ruby>` 用浏览器原生 ruby 渲染，注音正确浮在汉字上方，不串进正文
-- 🔝 **上下同屏**：识别顶部定位（VTT `line:≤20%`、SRT/ASS `{\an7/8/9}`），招牌/旁白注释以小一号显示在主字幕上方
-- ⏱ **同步微调**：±0.5s / ±5s 一键对时；**拖动进度条**或输入时间码（`1:23:45`）跳转
-- 🎯 **漂移校正**：标记前后两个同步点，一次拉正「开头对上、越走越偏」（帧率/版本不同导致的渐进漂移）——手动同步类工具里少见
-- 👥 **双语同屏**：再加载一个字幕文件，母语 + 原文上下同时显示（语言学习者友好）
-- ⏸ 暂停/继续（中场休息友好）
-- 🌑 纯黑背景（OLED 熄灭像素）+ 应用内**二次压暗**滑杆
-- 🎨 文字颜色：白/灰/**琥珀/红**（暗场里红光最不刺眼）；字号滑杆
-- 🔆 **Wake Lock 屏幕常亮**——两小时电影不锁屏
-- 💾 **断点恢复**：每 5 秒存档，误刷新/误退出一键续播
-- 📴 **PWA 离线可用**：在家打开过一次，影厅没网也能用
-- 🔒 隐私：文件只在本机解析，**零上传、零后端**
-- 🌍 **多语言界面**：中 / English / 日本語 / Français / Español / 한국어，自动跟随浏览器语言，可手动切换并记住
-- 🍿 内置演示字幕，在家先把流程走一遍（演示文案随界面语言）
+## Features
 
-## 技术
+- 📄 Supports **.srt / .vtt / .ass (.ssa)** with automatic encoding detection (UTF-8 → GB18030 → Windows-1252, so old Chinese subtitles never turn to mojibake)
+- 🈁 **Furigana / pinyin ruby**: `<ruby>漢字<rt>かんじ</rt></ruby>` in VTT is rendered with the browser's native ruby support, so the reading floats correctly above the characters instead of leaking into the line
+- 🔝 **Top & bottom on screen at once**: detects top positioning (VTT `line:≤20%`, SRT/ASS `{\an7/8/9}`) and shows signs / narration notes one size smaller above the main subtitle
+- ⏱ **Sync nudging**: one-tap ±0.5s / ±5s offset; **drag the progress bar** or type a timecode (`1:23:45`) to jump
+- 🎯 **Drift correction**: mark two sync points and straighten out a track that "starts on time but drifts further off as it goes" (progressive drift from differing frame rates / versions) — rarely found in manual-sync tools
+- 👥 **Dual subtitles**: load a second file and show your native language + the original stacked together (great for language learners)
+- ⏸ Pause / resume (handy for intermissions)
+- 🌑 Pure-black background (OLED pixels off) + an in-app **extra-dim** slider
+- 🎨 Text color: white / gray / **amber / red** (red is easiest on the eyes in a dark room); font-size slider
+- 🔆 **Wake Lock keeps the screen on** — no locking during a two-hour movie
+- 💾 **Resume where you left off**: autosaves every 5 seconds, so an accidental refresh or exit is one tap from continuing
+- 📴 **Works offline as a PWA**: open it once at home and it runs even without signal in the theatre
+- 🔒 Privacy: files are parsed only on your device — **zero upload, zero backend**
+- 🌍 **Multilingual UI**: 中文 / English / 日本語 / Français / Español / 한국어, auto-following your browser language, switchable and remembered
+- 🍿 Built-in demo subtitle so you can rehearse the whole flow at home (demo text follows the UI language)
 
-Vite + TypeScript(strict) + Vitest，零框架零运行时依赖（全部 devDependencies），
-构建产物约 49 KB（含 6 语文案）。领域层（解析器/时钟/命中查询/漂移校准）为纯函数，33 个单元测试覆盖。
+## Tech
+
+Vite + TypeScript (strict) + Vitest, zero frameworks and zero runtime dependencies (everything is a devDependency); the build is about 49 KB (including all 6 languages). The domain layer (parsers / clock / cue lookup / drift calibration) is written as pure functions, covered by 33 unit tests.
 
 ```
 src/
-  domain/   纯逻辑：parseSrt / parseVtt / parseAss / parse(编码探测+调度)
-            cues(二分命中/时间格式) / clock(播放时钟)
-  app/      store（设置 + 会话持久化）
-  i18n/     messages(6 语文案) / index(检测·切换·t() 插值+回退)
-  ui/       SetupView（选文件/拖拽/续播/演示/语言切换）
-            PlayerView（播放+控制层）/ wakeLock / dom
-tests/      Vitest 单元测试
+  domain/   Pure logic: parseSrt / parseVtt / parseAss / parse (encoding sniff + dispatch)
+            cues (binary-search lookup / time formatting) / clock (playback clock)
+  app/      store (settings + session persistence)
+  i18n/     messages (6-language strings) / index (detect · switch · t() interpolation + fallback)
+  ui/       SetupView (file pick / drag-drop / resume / demo / language switch)
+            PlayerView (playback + control layer) / wakeLock / dom
+tests/      Vitest unit tests
 ```
 
-## 开发
+## Development
 
 ```bash
 npm install
-npm run dev      # 开发服务器
+npm run dev      # dev server
 npm run check    # tsc + vitest
-npm run build    # 生产构建 -> dist/
+npm run build    # production build -> dist/
 ```
 
-## 部署
+## Deployment
 
-Cloudflare Pages：Build command `npm run build`，输出目录 `dist`。
+Cloudflare Pages: build command `npm run build`, output directory `dist`.
 
-## 许可
+## License
 
 MIT © Snownamida

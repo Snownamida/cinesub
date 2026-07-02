@@ -34,13 +34,13 @@ ${t('demo.enjoy_prefix')}<ruby>映画<rt>えいが</rt></ruby>を<ruby>楽<rt>�
  */
 export class SetupView {
     private readonly container: HTMLElement;
-    private readonly onStart: (cues: Cue[], fileName: string, startAt: number) => void;
+    private readonly onStart: (cues: Cue[], fileName: string, startAt: number, secondaryCues?: Cue[] | null, secondaryName?: string | null) => void;
     private root!: HTMLElement;
     private statusEl!: HTMLElement;
     private startBtn!: HTMLButtonElement;
-    private loaded: { cues: Cue[]; fileName: string } | null = null;
+    private loaded: { cues: Cue[]; fileName: string; secondaryCues?: Cue[]; secondaryName?: string } | null = null;
 
-    constructor(container: HTMLElement, onStart: (cues: Cue[], fileName: string, startAt: number) => void) {
+    constructor(container: HTMLElement, onStart: (cues: Cue[], fileName: string, startAt: number, secondaryCues?: Cue[] | null, secondaryName?: string | null) => void) {
         this.container = container;
         this.onStart = onStart;
         this.render();
@@ -99,6 +99,7 @@ export class SetupView {
             dropZone,
             this.statusEl,
             this.startBtn,
+            this.secondRow(),
             el('button', { class: 'btn-demo', text: t('setup.demo'), onclick: () => this.loadDemo() }),
             el('ul', { class: 'setup-tips' }, [
                 el('li', { text: t('setup.tip_offline') }),
@@ -108,6 +109,26 @@ export class SetupView {
             // Ko-fi：href 命中 kofi-widget.js，会在页面内弹窗打开，不跳走
             el('a', { class: 'btn-support', href: 'https://ko-fi.com/snownamida', target: '_blank', rel: 'noopener', text: t('setup.support') }),
         ]);
+    }
+
+    /** 双语入口：仅在主字幕已加载后出现；已加载副字幕则显示其名 + 移除。 */
+    private secondRow(): HTMLElement | null {
+        if (!this.loaded) return null;
+        if (this.loaded.secondaryCues) {
+            return el('div', { class: 'second-loaded' }, [
+                el('span', { text: t('setup.second_loaded', { name: this.loaded.secondaryName ?? '' }) }),
+                el('button', {
+                    class: 'btn-dismiss', text: '×', title: t('setup.second_remove'),
+                    onclick: () => { if (this.loaded) { this.loaded.secondaryCues = undefined; this.loaded.secondaryName = undefined; } this.render(); },
+                }),
+            ]);
+        }
+        const input = el('input', { type: 'file', accept: '.srt,.vtt,.ass,.ssa,.txt', id: 'file-input-2', class: 'visually-hidden' });
+        input.addEventListener('change', () => {
+            const f = (input as HTMLInputElement).files?.[0];
+            if (f) void this.loadSecondary(f);
+        });
+        return el('label', { class: 'btn-second', for: 'file-input-2', text: t('setup.add_second') }, [input]);
     }
 
     /** 语言下拉：切换后就地重建整个界面。 */
@@ -130,7 +151,7 @@ export class SetupView {
             ]),
             el('button', {
                 class: 'btn-resume', text: t('setup.resume'),
-                onclick: () => this.onStart(session.cues, session.fileName, session.positionMs),
+                onclick: () => this.onStart(session.cues, session.fileName, session.positionMs, session.secondaryCues, session.secondaryName),
             }),
             el('button', {
                 class: 'btn-dismiss', text: '×', title: t('setup.dismiss'),
@@ -148,8 +169,24 @@ export class SetupView {
                 return;
             }
             this.loaded = { cues, fileName: file.name };
-            this.setStatus(t('setup.status_ok', { name: file.name, n: cues.length, dur: formatTime(totalDuration(cues)) }), false);
-            this.startBtn.disabled = false;
+            this.render(); // 重建以显示「双语」入口，render 内部会恢复已加载状态
+        } catch {
+            this.setStatus(t('setup.status_read_fail'), true);
+        }
+    }
+
+    private async loadSecondary(file: File): Promise<void> {
+        if (!this.loaded) return;
+        try {
+            const text = decodeSubtitleBytes(await file.arrayBuffer());
+            const cues = parseSubtitle(file.name, text);
+            if (cues.length === 0) {
+                this.setStatus(t('setup.status_parse_fail', { name: file.name }), true);
+                return;
+            }
+            this.loaded.secondaryCues = cues;
+            this.loaded.secondaryName = file.name;
+            this.render();
         } catch {
             this.setStatus(t('setup.status_read_fail'), true);
         }
@@ -168,6 +205,6 @@ export class SetupView {
     }
 
     private start(at: number): void {
-        if (this.loaded) this.onStart(this.loaded.cues, this.loaded.fileName, at);
+        if (this.loaded) this.onStart(this.loaded.cues, this.loaded.fileName, at, this.loaded.secondaryCues, this.loaded.secondaryName);
     }
 }

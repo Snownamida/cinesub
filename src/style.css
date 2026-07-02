@@ -63,6 +63,17 @@ body {
 }
 .btn-demo:hover { border-color: #666; color: #ccc; }
 
+.btn-second {
+    display: block; text-align: center; cursor: pointer;
+    font: inherit; font-size: 0.92rem; color: #9ab;
+    background: #0e1116; border: 1px solid #2a3340; border-radius: 12px; padding: 10px;
+}
+.btn-second:hover { border-color: #3f4d5e; color: #cde; }
+.second-loaded {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    color: #7bd88f; font-size: 0.9rem;
+}
+
 .setup-tips { list-style: none; color: #777; font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
 
 .resume-card {
@@ -92,7 +103,7 @@ body.playing { overflow: hidden; }
     align-items: center;
     gap: 0.6em;
 }
-.subtitle, .subtitle-top {
+.subtitle, .subtitle-top, .subtitle-second {
     text-align: center;
     font-weight: 600;
     line-height: 1.55;
@@ -100,7 +111,8 @@ body.playing { overflow: hidden; }
     text-wrap: balance;
 }
 .subtitle-top { opacity: 0.75; }
-.subtitle-top:empty { display: none; }
+.subtitle-top:empty, .subtitle-second:empty { display: none; }
+.subtitle-second { opacity: 0.82; }
 /* 注音（假名/拼音）：原生 ruby，小一号更贴合阅读习惯 */
 ruby > rt { font-size: 0.5em; opacity: 0.85; letter-spacing: 0.05em; }
 .dim-overlay { position: fixed; inset: 0; pointer-events: none; }
@@ -137,6 +149,8 @@ ruby > rt { font-size: 0.5em; opacity: 0.85; letter-spacing: 0.05em; }
 }
 .ctl-input.bad { border-color: #ff7b72; }
 .ctl-slider { flex: 1; max-width: 160px; accent-color: #c8963c; }
+.ctl-seek { flex: 1; min-width: 0; height: 42px; accent-color: #c8963c; cursor: pointer; }
+.ctl-hint.warn { color: #ff9b72; }
 .ctl-color {
     width: 34px; height: 34px; border-radius: 50%; border: 2px solid #333; cursor: pointer;
 }

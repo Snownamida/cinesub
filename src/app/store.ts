@@ -37,6 +37,9 @@ export function saveSettings(s: Settings): void {
 export interface Session {
     fileName: string;
     cues: Cue[];
+    /** 可选的第二语言字幕（双语同屏）。 */
+    secondaryName?: string;
+    secondaryCues?: Cue[];
     positionMs: number;
     savedAt: number;
 }

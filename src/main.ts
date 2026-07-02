@@ -18,7 +18,10 @@ function showSetup(): void {
     new SetupView(app!, startPlayer);
 }
 
-function startPlayer(cues: Cue[], fileName: string, startAt: number): void {
+function startPlayer(
+    cues: Cue[], fileName: string, startAt: number,
+    secondaryCues?: Cue[] | null, secondaryName?: string | null,
+): void {
     document.body.classList.add('playing');
     player = new PlayerView(app!, {
         cues,
@@ -26,6 +29,8 @@ function startPlayer(cues: Cue[], fileName: string, startAt: number): void {
         startAt,
         settings: loadSettings(),
         onExit: showSetup,
+        secondaryCues,
+        secondaryName,
     });
 }
 

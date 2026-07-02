@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PlaybackClock } from '../src/domain/clock';
+import { PlaybackClock, MIN_ANCHOR_GAP } from '../src/domain/clock';
 import { activeText, formatTime, parseTimeInput, totalDuration } from '../src/domain/cues';
 
 function fakeNow() {
@@ -53,6 +53,57 @@ describe('PlaybackClock', () => {
         expect(c.current()).toBe(-3000);
         f.advance(3000);
         expect(c.current()).toBe(0);
+    });
+});
+
+describe('PlaybackClock 两点漂移校准', () => {
+    it('标记两个同步点后按线性拟合校正漂移，且标记时刻不跳变', () => {
+        const f = fakeNow();
+        const c = new PlaybackClock(f.now);
+        c.start(0);
+        f.advance(60000);
+        c.seek(61000);               // 开场对齐：此刻字幕应是 61s
+        expect(c.markSyncPoint()).toBe('first');
+        f.advance(600000);           // 又过 10 分钟
+        c.seek(667600);              // 重新对齐：漂移后此刻字幕应是 667.6s
+        const before = c.current();
+        expect(c.markSyncPoint()).toBe('calibrated');
+        expect(c.current()).toBeCloseTo(before, 6);           // 标记那一刻不跳变
+        expect(c.syncInfo()).toEqual({ points: 2, scale: (667600 - 61000) / (660000 - 60000) });
+        f.advance(300000);           // 之后继续按拟合比例推进
+        expect(c.current()).toBeCloseTo(1.011 * 960000 + 340, 3);
+    });
+
+    it('两点间隔太近则拒绝校准', () => {
+        const f = fakeNow();
+        const c = new PlaybackClock(f.now);
+        c.start(0);
+        expect(c.markSyncPoint()).toBe('first');
+        f.advance(MIN_ANCHOR_GAP - 1);
+        expect(c.markSyncPoint()).toBe('too-close');
+        expect(c.syncInfo().points).toBe(1);
+    });
+
+    it('resetSync 回到 scale=1 且当前位置不跳变', () => {
+        const f = fakeNow();
+        const c = new PlaybackClock(f.now);
+        c.start(0);
+        f.advance(60000); c.seek(61000); c.markSyncPoint();
+        f.advance(600000); c.seek(667600); c.markSyncPoint();
+        const pos = c.current();
+        c.resetSync();
+        expect(c.current()).toBe(pos);
+        expect(c.syncInfo()).toEqual({ points: 0, scale: 1 });
+    });
+
+    it('start 会重置校准', () => {
+        const f = fakeNow();
+        const c = new PlaybackClock(f.now);
+        c.start(0);
+        f.advance(60000); c.seek(61000); c.markSyncPoint();
+        f.advance(600000); c.seek(667600); c.markSyncPoint();
+        c.start(0);
+        expect(c.syncInfo()).toEqual({ points: 0, scale: 1 });
     });
 });
 

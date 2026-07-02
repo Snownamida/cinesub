@@ -12,6 +12,11 @@ function assTime(t: string): number | null {
     );
 }
 
+/** 是否含顶部定位标签：\an7/8/9 或旧式 \a5/6/7。 */
+function isTop(s: string): boolean {
+    return /\\an[789][\\}]/.test(s) || /\\a[567][\\}]/.test(s);
+}
+
 /** 去掉 {\...} 特效标签，\N/\n → 换行，\h → 空格。 */
 function cleanText(s: string): string {
     return s
@@ -54,11 +59,12 @@ export function parseAss(content: string): Cue[] {
         const parts = body.split(',');
         if (parts.length < nFields) continue;
         const head = parts.slice(0, nFields - 1);
-        const text = cleanText(parts.slice(nFields - 1).join(','));
+        const rawTextField = parts.slice(nFields - 1).join(',');
+        const text = cleanText(rawTextField);
         const start = assTime(head[startIdx]);
         const end = assTime(head[endIdx]);
         if (start === null || end === null || end <= start || !text) continue;
-        cues.push({ start, end, text });
+        cues.push({ start, end, text, ...(isTop(rawTextField) ? { top: true } : {}) });
     }
     return sortCues(cues);
 }

@@ -1,10 +1,21 @@
+/** 富文本片段：t = 正文；rt 存在时表示 t 头顶的注音（假名/拼音）。 */
+export interface RubySeg {
+    t: string;
+    rt?: string;
+}
+
 /** 一条字幕：时间窗（毫秒）+ 文本（可多行）。 */
 export interface Cue {
     /** 开始时间（ms） */
     start: number;
     /** 结束时间（ms） */
     end: number;
+    /** 纯文本（注音不混入正文——供检索/降级显示） */
     text: string;
+    /** 顶部字幕（{\an7/8/9} 等）：渲染为主字幕上方的小字注释 */
+    top?: boolean;
+    /** 含注音时的结构化内容；无注音的字幕不携带此字段 */
+    rich?: RubySeg[];
 }
 
 /** 按开始时间排序（解析器的输出都应经过这一步）。 */
@@ -17,22 +28,28 @@ export function sortCues(cues: Cue[]): Cue[] {
  * cues 必须已按 start 排序。二分定位后向前回扫少量条目以覆盖重叠场景。
  */
 export function activeText(cues: Cue[], t: number): string {
-    if (cues.length === 0) return '';
-    // 二分：最后一个 start <= t 的下标
+    return activeCues(cues, t).map((c) => c.text).join('\n');
+}
+
+/**
+ * 返回时刻 t 命中的全部字幕（按开始时间排序）。
+ * 播放器用它拿到 top/rich 结构；activeText 仍返回拼接纯文本。
+ */
+export function activeCues(cues: Cue[], t: number): Cue[] {
+    if (cues.length === 0) return [];
     let lo = 0, hi = cues.length - 1, idx = -1;
     while (lo <= hi) {
         const mid = (lo + hi) >> 1;
         if (cues[mid].start <= t) { idx = mid; lo = mid + 1; }
         else hi = mid - 1;
     }
-    if (idx === -1) return '';
-    const parts: string[] = [];
-    // 回扫：重叠字幕通常不超过几条（双语/歌词注释）
+    if (idx === -1) return [];
+    const hits: Cue[] = [];
     for (let i = Math.max(0, idx - 8); i <= idx; i++) {
         const c = cues[i];
-        if (c.start <= t && t < c.end) parts.push(c.text);
+        if (c.start <= t && t < c.end) hits.push(c);
     }
-    return parts.join('\n');
+    return hits;
 }
 
 /** 字幕总时长（最后一条的结束时间，ms）。 */

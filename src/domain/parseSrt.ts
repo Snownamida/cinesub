@@ -12,6 +12,11 @@ function srtTime(t: string): number | null {
     );
 }
 
+/** 是否含顶部定位码：{\an7|8|9}（新）或 {\a5|6|7}（旧 SSA 习惯）。 */
+function isTop(s: string): boolean {
+    return /\{\\an[789]\}/.test(s) || /\{\\a[567]\}/.test(s);
+}
+
 /** 去掉 SRT 里常见的 HTML 标签（<i> <b> <font …>）与 {\an8} 定位码。 */
 function cleanText(s: string): string {
     return s
@@ -41,8 +46,9 @@ export function parseSrt(content: string): Cue[] {
         const endMatch = rawEnd.trim().match(/^(\d{1,2}:\d{1,2}:\d{1,2}[,.]\d{1,3})/);
         const end = endMatch ? srtTime(endMatch[1]) : null;
         if (start === null || end === null || end <= start) continue;
-        const text = cleanText(lines.slice(tIdx + 1).join('\n'));
-        if (text) cues.push({ start, end, text });
+        const rawText = lines.slice(tIdx + 1).join('\n');
+        const text = cleanText(rawText);
+        if (text) cues.push({ start, end, text, ...(isTop(rawText) ? { top: true } : {}) });
     }
     return sortCues(cues);
 }

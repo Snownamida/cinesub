@@ -3,28 +3,27 @@ import { Cue, formatTime, totalDuration } from '../domain/cues';
 import { Session, clearSession, loadSession } from '../app/store';
 import { el } from './dom';
 
-/** 内置演示字幕：在家先体验一遍流程。 */
-const DEMO_SRT = `1
-00:00:01,000 --> 00:00:04,000
+/** 内置演示字幕：在家先体验一遍流程，并展示注音/顶部字幕。 */
+const DEMO_VTT = `WEBVTT
+
+00:00:01.000 --> 00:00:04.000
 👋 欢迎使用 CineSub
 
-2
-00:00:05,000 --> 00:00:09,000
+00:00:05.000 --> 00:00:09.000
 电影开场时，按「开始播放」
 
-3
-00:00:10,000 --> 00:00:15,000
+00:00:10.000 --> 00:00:15.000
 字幕和台词对不上？
 用 +/− 按钮微调同步
 
-4
-00:00:16,000 --> 00:00:20,000
-点击屏幕任意处
-可以呼出或隐藏控制按钮
+00:00:16.000 --> 00:00:19.000 line:8%
+（这一行是顶部注释，比如招牌翻译）
 
-5
-00:00:21,000 --> 00:00:25,000
-祝观影愉快 🍿`;
+00:00:16.000 --> 00:00:20.000
+点击屏幕任意处，呼出或隐藏控制按钮
+
+00:00:21.000 --> 00:00:25.000
+支持假名注音：<ruby>映画<rt>えいが</rt></ruby>を<ruby>楽<rt>たの</rt></ruby>しんで 🍿`;
 
 /**
  * 起始界面：选择/拖入字幕文件 → 解析 → 「开始播放」。
@@ -121,7 +120,7 @@ export class SetupView {
     }
 
     private loadDemo(): void {
-        const cues = parseSubtitle('demo.srt', DEMO_SRT);
+        const cues = parseSubtitle('demo.vtt', DEMO_VTT);
         this.loaded = { cues, fileName: '演示字幕' };
         this.onStart(cues, '演示字幕', 0);
     }

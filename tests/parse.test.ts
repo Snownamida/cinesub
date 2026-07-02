@@ -99,3 +99,47 @@ describe('decodeSubtitleBytes', () => {
         expect(decodeSubtitleBytes(gbk)).toBe('中文');
     });
 });
+
+describe('高级字幕：注音与顶部', () => {
+    it('VTT <ruby> 结构化为 rich，纯文本不含注音', () => {
+        const cues = parseVtt(`WEBVTT
+
+00:00:01.000 --> 00:00:03.000
+<ruby>漢字<rt>かんじ</rt></ruby>を読む`);
+        expect(cues[0].text).toBe('漢字を読む');
+        expect(cues[0].rich).toEqual([
+            { t: '漢字', rt: 'かんじ' },
+            { t: 'を読む' },
+        ]);
+    });
+
+    it('VTT line:≤20% 标记为顶部字幕', () => {
+        const cues = parseVtt(`WEBVTT
+
+00:00:01.000 --> 00:00:03.000 line:10%
+招牌注释`);
+        expect(cues[0].top).toBe(true);
+    });
+
+    it('SRT {\\an8} 标记顶部，正文清理定位码', () => {
+        const cues = parseSrt(`1
+00:00:01,000 --> 00:00:03,000
+{\\an8}(招牌:警察局)`);
+        expect(cues[0].top).toBe(true);
+        expect(cues[0].text).toBe('(招牌:警察局)');
+    });
+
+    it('ASS \\an8 覆盖标签标记顶部字幕', () => {
+        const cues = parseAss(`[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:01.00,0:00:03.00,Default,,0,0,0,,{\\an8}招牌:出口`);
+        expect(cues[0].top).toBe(true);
+        expect(cues[0].text).toBe('招牌:出口');
+    });
+
+    it('普通字幕不携带 rich/top 字段', () => {
+        const cues = parseSrt('1\n00:00:01,000 --> 00:00:02,000\n普通台词');
+        expect(cues[0].rich).toBeUndefined();
+        expect(cues[0].top).toBeUndefined();
+    });
+});

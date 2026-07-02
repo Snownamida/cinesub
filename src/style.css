@@ -73,14 +73,24 @@ body.playing { overflow: hidden; }
     display: flex; align-items: center; justify-content: center;
     user-select: none; -webkit-user-select: none; touch-action: manipulation;
 }
-.subtitle {
+.subtitle-stack {
     max-width: 92vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6em;
+}
+.subtitle, .subtitle-top {
     text-align: center;
     font-weight: 600;
-    line-height: 1.45;
+    line-height: 1.55;
     white-space: pre-line;
     text-wrap: balance;
 }
+.subtitle-top { opacity: 0.75; }
+.subtitle-top:empty { display: none; }
+/* 注音（假名/拼音）：原生 ruby，小一号更贴合阅读习惯 */
+ruby > rt { font-size: 0.5em; opacity: 0.85; letter-spacing: 0.05em; }
 .dim-overlay { position: fixed; inset: 0; pointer-events: none; }
 
 /* 控制层 */

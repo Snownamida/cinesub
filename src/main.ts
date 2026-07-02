@@ -1,11 +1,14 @@
 import './style.css';
 import { Cue } from './domain/cues';
 import { loadSettings } from './app/store';
+import { initHtmlLang } from './i18n';
 import { PlayerView } from './ui/PlayerView';
 import { SetupView } from './ui/SetupView';
 
 const app = document.getElementById('app');
 if (!app) throw new Error('conteneur #app introuvable');
+
+initHtmlLang();
 
 let player: PlayerView | null = null;
 

@@ -19,19 +19,21 @@
 - 💾 **断点恢复**：每 5 秒存档，误刷新/误退出一键续播
 - 📴 **PWA 离线可用**：在家打开过一次，影厅没网也能用
 - 🔒 隐私：文件只在本机解析，**零上传、零后端**
-- 🍿 内置演示字幕，在家先把流程走一遍
+- 🌍 **多语言界面**：中 / English / 日本語 / Français / Español / 한국어，自动跟随浏览器语言，可手动切换并记住
+- 🍿 内置演示字幕，在家先把流程走一遍（演示文案随界面语言）
 
 ## 技术
 
 Vite + TypeScript(strict) + Vitest，零框架零运行时依赖（全部 devDependencies），
-构建产物约 28 KB。领域层（解析器/时钟/命中查询）为纯函数，25 个单元测试覆盖。
+构建产物约 41 KB（含 6 语文案）。领域层（解析器/时钟/命中查询）为纯函数，29 个单元测试覆盖。
 
 ```
 src/
   domain/   纯逻辑：parseSrt / parseVtt / parseAss / parse(编码探测+调度)
             cues(二分命中/时间格式) / clock(播放时钟)
   app/      store（设置 + 会话持久化）
-  ui/       SetupView（选文件/拖拽/续播/演示）
+  i18n/     messages(6 语文案) / index(检测·切换·t() 插值+回退)
+  ui/       SetupView（选文件/拖拽/续播/演示/语言切换）
             PlayerView（播放+控制层）/ wakeLock / dom
 tests/      Vitest 单元测试
 ```

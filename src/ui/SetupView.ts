@@ -1,45 +1,64 @@
 import { decodeSubtitleBytes, parseSubtitle } from '../domain/parse';
 import { Cue, formatTime, totalDuration } from '../domain/cues';
 import { Session, clearSession, loadSession } from '../app/store';
+import { SUPPORTED, getLang, setLang, t } from '../i18n';
 import { el } from './dom';
 
-/** 内置演示字幕：在家先体验一遍流程，并展示注音/顶部字幕。 */
-const DEMO_VTT = `WEBVTT
+/** 内置演示字幕（随界面语言生成）：在家先体验一遍流程，并展示注音/顶部字幕。 */
+function buildDemoVtt(): string {
+    return `WEBVTT
 
 00:00:01.000 --> 00:00:04.000
-👋 欢迎使用 CineSub
+${t('demo.welcome')}
 
 00:00:05.000 --> 00:00:09.000
-电影开场时，按「开始播放」
+${t('demo.start')}
 
 00:00:10.000 --> 00:00:15.000
-字幕和台词对不上？
-用 +/− 按钮微调同步
+${t('demo.sync')}
 
 00:00:16.000 --> 00:00:19.000 line:8%
-（这一行是顶部注释，比如招牌翻译）
+${t('demo.top_note')}
 
 00:00:16.000 --> 00:00:20.000
-点击屏幕任意处，呼出或隐藏控制按钮
+${t('demo.tap')}
 
 00:00:21.000 --> 00:00:25.000
-支持假名注音：<ruby>映画<rt>えいが</rt></ruby>を<ruby>楽<rt>たの</rt></ruby>しんで 🍿`;
+${t('demo.enjoy_prefix')}<ruby>映画<rt>えいが</rt></ruby>を<ruby>楽<rt>たの</rt></ruby>しんで 🍿`;
+}
 
 /**
  * 起始界面：选择/拖入字幕文件 → 解析 → 「开始播放」。
  * 若上次会话存在（2 小时内），提供一键续播。
+ * 顶部可切换界面语言，切换后就地重建（保留已加载的文件）。
  */
 export class SetupView {
-    private readonly root: HTMLElement;
+    private readonly container: HTMLElement;
     private readonly onStart: (cues: Cue[], fileName: string, startAt: number) => void;
+    private root!: HTMLElement;
     private statusEl!: HTMLElement;
     private startBtn!: HTMLButtonElement;
     private loaded: { cues: Cue[]; fileName: string } | null = null;
 
     constructor(container: HTMLElement, onStart: (cues: Cue[], fileName: string, startAt: number) => void) {
+        this.container = container;
         this.onStart = onStart;
+        this.render();
+    }
+
+    /** 构建并挂载视图；语言切换后重新调用即可。 */
+    private render(): void {
         this.root = this.build();
-        container.replaceChildren(this.root);
+        this.container.replaceChildren(this.root);
+        // 语言切换重建后，恢复「已加载文件」的状态提示
+        if (this.loaded) {
+            this.startBtn.disabled = false;
+            this.setStatus(t('setup.status_ok', {
+                name: this.loaded.fileName,
+                n: this.loaded.cues.length,
+                dur: formatTime(totalDuration(this.loaded.cues)),
+            }), false);
+        }
     }
 
     private build(): HTMLElement {
@@ -50,12 +69,12 @@ export class SetupView {
         });
 
         this.statusEl = el('div', { class: 'setup-status' });
-        this.startBtn = el('button', { class: 'btn-start', text: '▶ 开始播放', disabled: true, onclick: () => this.start(0) });
+        this.startBtn = el('button', { class: 'btn-start', text: t('setup.start'), disabled: true, onclick: () => this.start(0) });
 
         const dropZone = el('label', { class: 'drop-zone', for: 'file-input' }, [
             el('div', { class: 'dz-icon', text: '🎬' }),
-            el('div', { class: 'dz-main', text: '选择字幕文件' }),
-            el('div', { class: 'dz-sub', text: '.srt / .vtt / .ass — 或拖到这里' }),
+            el('div', { class: 'dz-main', text: t('setup.pick_file') }),
+            el('div', { class: 'dz-sub', text: t('setup.pick_hint') }),
             fileInput,
         ]);
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('over'); });
@@ -71,33 +90,50 @@ export class SetupView {
         const resume = session && Date.now() - session.savedAt < 2 * 3600_000 ? this.resumeCard(session) : null;
 
         return el('div', { class: 'setup' }, [
-            el('h1', { class: 'setup-title' }, [el('span', { text: 'CineSub' }), el('small', { text: ' 影院字幕伴侣' })]),
-            el('p', { class: 'setup-tagline', text: '手机举字幕，纯黑不扰人 — 海外看电影，字幕自己带。' }),
+            el('div', { class: 'setup-head' }, [
+                el('h1', { class: 'setup-title' }, [el('span', { text: 'CineSub' }), el('small', { text: ' ' + t('setup.subtitle_hint') })]),
+                this.langPicker(),
+            ]),
+            el('p', { class: 'setup-tagline', text: t('setup.tagline') }),
             resume,
             dropZone,
             this.statusEl,
             this.startBtn,
-            el('button', { class: 'btn-demo', text: '🍿 先用演示字幕试一试', onclick: () => this.loadDemo() }),
+            el('button', { class: 'btn-demo', text: t('setup.demo'), onclick: () => this.loadDemo() }),
             el('ul', { class: 'setup-tips' }, [
-                el('li', { text: '📴 本页离线可用：内容只在你手机里，不上传任何文件' }),
-                el('li', { text: '🔆 进场前把系统亮度调低，再用应用内「暗度」微调' }),
-                el('li', { text: '⏱ 电影正片开始的瞬间按「开始播放」，之后用 ± 对时' }),
+                el('li', { text: t('setup.tip_offline') }),
+                el('li', { text: t('setup.tip_brightness') }),
+                el('li', { text: t('setup.tip_sync') }),
             ]),
+            // Ko-fi：href 命中 kofi-widget.js，会在页面内弹窗打开，不跳走
+            el('a', { class: 'btn-support', href: 'https://ko-fi.com/snownamida', target: '_blank', rel: 'noopener', text: t('setup.support') }),
         ]);
+    }
+
+    /** 语言下拉：切换后就地重建整个界面。 */
+    private langPicker(): HTMLElement {
+        const sel = el('select', { class: 'lang-select', 'aria-label': t('lang.label') },
+            SUPPORTED.map((l) => el('option', { value: l.code, text: l.label, ...(l.code === getLang() ? { selected: 'selected' } : {}) })),
+        ) as HTMLSelectElement;
+        sel.addEventListener('change', () => {
+            setLang(sel.value as (typeof SUPPORTED)[number]['code']);
+            this.render();
+        });
+        return sel;
     }
 
     private resumeCard(session: Session): HTMLElement {
         return el('div', { class: 'resume-card' }, [
             el('div', {}, [
                 el('div', { class: 'resume-name', text: session.fileName }),
-                el('div', { class: 'resume-pos', text: `上次播到 ${formatTime(session.positionMs)}` }),
+                el('div', { class: 'resume-pos', text: t('setup.resume_pos', { time: formatTime(session.positionMs) }) }),
             ]),
             el('button', {
-                class: 'btn-resume', text: '继续播放',
+                class: 'btn-resume', text: t('setup.resume'),
                 onclick: () => this.onStart(session.cues, session.fileName, session.positionMs),
             }),
             el('button', {
-                class: 'btn-dismiss', text: '×', title: '丢弃',
+                class: 'btn-dismiss', text: '×', title: t('setup.dismiss'),
                 onclick: (e: Event) => { clearSession(); (e.target as HTMLElement).closest('.resume-card')?.remove(); },
             }),
         ]);
@@ -108,21 +144,22 @@ export class SetupView {
             const text = decodeSubtitleBytes(await file.arrayBuffer());
             const cues = parseSubtitle(file.name, text);
             if (cues.length === 0) {
-                this.setStatus(`⚠️ 无法从「${file.name}」解析出字幕（支持 .srt / .vtt / .ass）`, true);
+                this.setStatus(t('setup.status_parse_fail', { name: file.name }), true);
                 return;
             }
             this.loaded = { cues, fileName: file.name };
-            this.setStatus(`✅ ${file.name} — ${cues.length} 条字幕，全长 ${formatTime(totalDuration(cues))}`, false);
+            this.setStatus(t('setup.status_ok', { name: file.name, n: cues.length, dur: formatTime(totalDuration(cues)) }), false);
             this.startBtn.disabled = false;
         } catch {
-            this.setStatus('⚠️ 读取文件失败', true);
+            this.setStatus(t('setup.status_read_fail'), true);
         }
     }
 
     private loadDemo(): void {
-        const cues = parseSubtitle('demo.vtt', DEMO_VTT);
-        this.loaded = { cues, fileName: '演示字幕' };
-        this.onStart(cues, '演示字幕', 0);
+        const name = t('setup.demo_name');
+        const cues = parseSubtitle('demo.vtt', buildDemoVtt());
+        this.loaded = { cues, fileName: name };
+        this.onStart(cues, name, 0);
     }
 
     private setStatus(msg: string, bad: boolean): void {

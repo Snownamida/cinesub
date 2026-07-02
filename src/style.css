@@ -21,9 +21,21 @@ body {
     flex-direction: column;
     gap: 16px;
 }
+.setup-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .setup-title { font-size: 2rem; letter-spacing: 0.5px; }
 .setup-title small { font-size: 1rem; color: #888; font-weight: 500; }
 .setup-tagline { color: #aaa; font-size: 0.95rem; }
+.lang-select {
+    font: inherit; font-size: 0.9rem; flex-shrink: 0; margin-top: 4px;
+    background: #14120c; color: #ccc; border: 1px solid #3a3320;
+    border-radius: 10px; padding: 8px 10px; cursor: pointer;
+}
+.btn-support {
+    display: block; text-align: center; text-decoration: none;
+    font-weight: 700; color: #e8d9a0; background: #26210f;
+    border: 1px solid #4a3f1c; border-radius: 12px; padding: 11px; cursor: pointer;
+}
+.btn-support:hover { background: #2f2913; }
 
 .drop-zone {
     display: flex; flex-direction: column; align-items: center; gap: 6px;

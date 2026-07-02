@@ -10,11 +10,12 @@ export interface Settings {
     dim: number;
 }
 
-export const COLORS: { id: string; label: string; value: string }[] = [
-    { id: 'white', label: '白', value: '#e8e8e8' },
-    { id: 'gray', label: '灰', value: '#9a9a9a' },
-    { id: 'amber', label: '琥珀', value: '#c8963c' },
-    { id: 'red', label: '红', value: '#b03030' },
+/** 颜色标签在 i18n 里按 `color.<id>` 查。 */
+export const COLORS: { id: string; value: string }[] = [
+    { id: 'white', value: '#e8e8e8' },
+    { id: 'gray', value: '#9a9a9a' },
+    { id: 'amber', value: '#c8963c' },
+    { id: 'red', value: '#b03030' },
 ];
 
 const SETTINGS_KEY = 'cinesub-settings';
